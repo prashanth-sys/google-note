@@ -3,6 +3,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
@@ -28,6 +29,30 @@ const initializeDBAndServer = async () => {
 };
 
 initializeDBAndServer();
+
+const authenticateToken = (request, response, next) => {
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+
+  if (jwtToken === undefined) {
+    response.status(401);
+    response.send("Invalid Access Token");
+  } else {
+    jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
+      if (error) {
+        response.status(401);
+        response.send("Invalid Access Token");
+      } else {
+        request.username = payload.username;
+        next();
+      }
+    });
+  }
+};
 
 //Register API
 
@@ -77,11 +102,50 @@ app.post("/login/", async (request, response) => {
     const isPasswordMatched = await bcrypt.compare(password, dbUser.password); // Compare User details using compare method
     console.log(`Password matched: ${isPasswordMatched}`); // Added debugging statement
 
-    if (isPasswordMatched) {
-      response.send("Login Success!");
+    if (isPasswordMatched === true) {
+      const payload = {
+        username: username,
+      };
+      const jwtToken = jwt.sign(payload, "MY_SECRET_TOKEN");
+      response.send({ jwtToken });
     } else {
       response.status(400);
       response.send("Invalid Password");
     }
   }
+});
+
+// Get Profile API
+
+app.get("/profile/", authenticateToken, async (request, response) => {
+  let { username } = request;
+  console.log(username);
+  const selectUserQuery = `
+  SELECT 
+  * 
+  FROM 
+  Users 
+  WHERE username = "${username}"
+  ;`;
+  const dbUser = await db.get(selectUserQuery);
+  response.send(dbUser);
+});
+
+// Get Notes API
+
+app.get("/notes/", authenticateToken, async (request, response) => {
+  const getNotesQuery = `
+                   SELECT 
+                        * 
+                    FROM 
+                    Notes
+                    ORDER BY 
+                    user_id
+                    ;`;
+  const noteQuery = await db.all(getNotesQuery);
+  response.send(noteQuery);
+});
+
+app.get("/notes/:noteId/", authenticateToken, async (request, response) => {
+  const { noteId } = request.params;
 });
