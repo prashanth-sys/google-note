@@ -146,6 +146,69 @@ app.get("/notes/", authenticateToken, async (request, response) => {
   response.send(noteQuery);
 });
 
-app.get("/notes/:noteId/", authenticateToken, async (request, response) => {
+//Get Note API
+
+app.get("/notes/:id/", authenticateToken, async (request, response) => {
   const { noteId } = request.params;
+  const getNoteQuery = `
+  SELECT * FROM Notes WHERE id = ${id};
+  `;
+  const dbQuery = await db.get(getNoteQuery);
+  response.send(dbQuery);
+});
+
+//Add Note API
+
+app.post("/notes", authenticateToken, async (request, response) => {
+  const noteDetails = request.body;
+  const { title, content, tags, backgroundColor } = noteDetails;
+  const createNoteQuery = `
+  INSERT INTO 
+  Notes(user_id, title, content, tags, background_color) 
+  VALUES 
+  (
+      "${userId}",
+      "${title}",
+      "${content}",
+      "${tags}",
+      "${backgroundColor}"
+  );
+  `;
+  const dbResponse = await db.run(createNoteQuery);
+  response.send("Note Created Successfully");
+});
+
+//Update Note API
+
+app.put("/notes/:id", authenticateToken, async (request, response) => {
+  const { id } = request.params;
+  const noteDetails = request.body;
+  const { title, content, tags, backgroundColor } = noteDetails;
+  const updateNoteQuery = `
+    UPDATE 
+    Notes 
+    SET 
+    title='${title}',
+    content='${content}',
+    tags='${tags}',
+    background_color='${backgroundColor}' 
+    WHERE 
+    id = '${id}';
+    `;
+  await db.run(updateNoteQuery);
+  response.send("Note Updated Successfully");
+});
+
+//Delete Note API
+
+app.delete("/notes/:id/", authenticateToken, async (request, response) => {
+  const { id } = request.params;
+  const deleteNoteQuery = `
+    DELETE FROM 
+    Notes 
+    WHERE 
+    id = ${id};
+    `;
+  await db.run(deleteNoteQuery);
+  response.send("Note Deleted Successfully");
 });

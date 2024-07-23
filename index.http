@@ -27,3 +27,31 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJha
 
 GET http://localhost:3000/profile/ 
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJhajEyMyIsImlhdCI6MTcyMTYyNjc3NX0.0DlSgVmHX7-SrSLpLgVghl0S2quZtI5Ppu3TEU80ftM  
+
+### 
+
+POST http://localhost:3000/notes/ 
+Content-Type: application/json 
+
+{
+    "title": "New Note Title",
+    "content":"this is the content of a new note",
+    "tags":"work, personal",
+    "background_color":"red"
+} 
+
+### 
+
+PUT http://localhost:3000/notes/4/ 
+Content-Type: application/json 
+
+{
+    "title": "New Note Title",
+    "content":"this is the content of a new note",
+    "tags":"work, personal",
+    "background_color":"yellow"
+} 
+
+### 
+
+DELETE http://localhost:3000/notes/4/
