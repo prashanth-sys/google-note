@@ -161,7 +161,7 @@ app.get("/notes/:id/", authenticateToken, async (request, response) => {
 
 app.post("/notes", authenticateToken, async (request, response) => {
   const noteDetails = request.body;
-  const { title, content, tags, backgroundColor } = noteDetails;
+  const { userId, title, content, tags, backgroundColor } = noteDetails;
   const createNoteQuery = `
   INSERT INTO 
   Notes(user_id, title, content, tags, background_color) 
